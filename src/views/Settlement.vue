@@ -96,7 +96,7 @@ const winnerName = computed(() => {
 });
 
 const loserName = computed(() => {
-    const player = store.players.find(p => p.id !== store.winnerId);
+    const player = store.players.find(p => p.id && p.id !== store.winnerId);
     return player ? player.name : '失败者';
 });
 

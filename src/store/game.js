@@ -11,7 +11,7 @@ export const useGameStore = defineStore('game', {
     playerId: null,
     settings: {
       maxPlayers: 2,
-      snackCount: 16,
+      snackCount: 6,
       poisonCount: 1,
       snackStyle: 'default',
       turnTimer: 0,

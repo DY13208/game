@@ -161,6 +161,10 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     
     if (room && room.players.length < room.settings.maxPlayers) {
+      if (room.players.some(p => p.name === playerName)) {
+        socket.emit('server_error', { message: '该昵称已被使用，请换一个。' });
+        return;
+      }
       const newPlayer = { id: socket.id, name: playerName, isHost: false };
       room.players.push(newPlayer);
       socket.join(roomId);
@@ -375,6 +379,10 @@ io.on('connection', (socket) => {
   socket.on('room:rename', ({ roomId, playerId, newName }) => {
     const room = rooms[roomId];
     if (!room) return;
+    if (room.players.some(p => p.name === newName && p.id !== playerId)) {
+      socket.emit('server_error', { message: '该昵称已被使用，请换一个。' });
+      return;
+    }
     const player = room.players.find(p => p.id === playerId);
     if (player) {
       player.name = newName;

@@ -39,10 +39,12 @@ const snackStyleOptions = [
 
 const playerOptions = Array.from({ length: 6 }, (_, i) => ({ label: `${i + 2}人`, value: i + 2 }));
 const snackCountOptions = [
+  { label: '6个', value: 6 },
+  { label: '8个', value: 8 },
+  { label: '10个', value: 10 },
+  { label: '12个', value: 12 },
+  { label: '14个', value: 14 },
   { label: '16个', value: 16 },
-  { label: '36个', value: 36 },
-  { label: '64个', value: 64 },
-  { label: '100个', value: 100 },
 ];
 
 const handleUploadFinish = ({ file, event }) => {

@@ -102,9 +102,9 @@ const shareTab = ref('qrcode');
           </n-input-group>
         </n-tab-pane>
       </n-tabs>
-      <p style="color: red; font-weight: bold; text-align: center; margin-bottom: 1rem;">
+      <!-- <p style="color: red; font-weight: bold; text-align: center; margin-bottom: 1rem;">
         [诊断信息] 当前是否为房主: {{ game.isHost }} | 玩家数量: {{ game.players.length }} | 可以开始游戏: {{ canStartGame }}
-      </p>
+      </p> -->
       <div class="content-wrapper">
         <div class="settings-panel">
           <h2>房间设置</h2>

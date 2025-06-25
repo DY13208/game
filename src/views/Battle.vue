@@ -10,7 +10,8 @@
         <n-space justify="space-between" align="center">
           <n-tag :type="isMyTurn ? 'success' : 'default'" size="large">
             <template v-if="store.gameStatus === 'preparing'">
-              请选择你要下毒的点心
+              <span v-if="myPoisonIndex === null">请选择你要下毒的点心</span>
+              <span v-else>你已选择毒药，等待其他玩家...</span>
             </template>
             <template v-else>
               {{ isMyTurn ? "你的回合" : `等待 ${currentPlayerName} 操作...` }}
@@ -53,7 +54,8 @@
                     :snack-style="store.settings.snackStyle"
                     :is-eaten="isSnackEaten(i - 1)"
                     :eaten-by="getEatenByPlayerName(i - 1)"
-                    :selectable="true"
+                    :selectable="myPoisonIndex === null"
+                    :is-my-poison="myPoisonIndex === (i - 1) && store.gameStatus === 'preparing'"
                     @click="handleSelectPoison(i - 1)"
                   />
                 </template>
@@ -92,22 +94,24 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGameStore } from '../store/game';
 import gameSocket from '../socket';
 import SnackItem from '../components/SnackItem.vue';
 import { useSound } from '../composables/useSound';
-import { NAlert } from 'naive-ui';
+import { NAlert, useMessage } from 'naive-ui';
 
 const router = useRouter();
 const store = useGameStore();
 const { play: playEatSound } = useSound('/sounds/eat.mp3');
 const { play: playTurnSound } = useSound('/sounds/turn.mp3');
+const message = useMessage();
 
 const timeLeft = ref(30);
 const history = ref([]);
 let timer = null;
+const myPoisonIndex = ref(null);
 
 const currentPlayerName = computed(() => {
   const player = store.players.find(p => p.id === store.currentPlayerId);
@@ -134,7 +138,12 @@ const handleEatSnack = (index) => {
 };
 
 const handleSelectPoison = (index) => {
-  if (store.gameStatus !== 'preparing') return;
+  if (store.poisonChoices[store.playerId] === index) {
+    message.warning('不能选择自己下的毒药！');
+    return;
+  }
+  if (store.gameStatus !== 'preparing' || myPoisonIndex.value !== null) return;
+  myPoisonIndex.value = index;
   store.socket.emit('game:set-poison', { roomId: store.roomId, snackIndex: index });
 };
 
@@ -188,7 +197,16 @@ watch(() => store.gameStatus, (status) => {
   if (status === 'ended') {
     if (timer) clearInterval(timer);
     router.push('/settlement');
+  } else if (status === 'preparing') {
+    myPoisonIndex.value = null;
   }
+});
+
+onMounted(() => {
+  if (store.socket && store.socket.socket && store.socket.socket.id) {
+    store.playerId = store.socket.socket.id;
+  }
+  myPoisonIndex.value = null;
 });
 
 onUnmounted(() => {

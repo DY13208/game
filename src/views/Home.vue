@@ -1,7 +1,7 @@
 <template>
   <div class="home-view">
     <n-card class="main-card">
-      <h1 class="title">吃点心找毒药</h1>
+      <h1 class="title">GO GO GO 出发咯!!</h1>
       <n-space vertical size="large">
         <n-input v-model:value="playerName" placeholder="请输入你的昵称" size="large" class="main-input" />
         <n-tabs type="line" animated v-model:value="activeTab" justify-content="center">

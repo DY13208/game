@@ -31,7 +31,8 @@ const props = defineProps({
   revealed: {
     type: Boolean,
     default: false
-  }
+  },
+  isMyPoison: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['click']);
@@ -83,11 +84,14 @@ const handleImageError = (event) => {
 <template>
   <div 
     class="snack-item" 
-    :class="{ 'is-eaten': isEaten, 'is-poison': isRevealedPoison, 'selectable': selectable }" 
+    :class="{ 'is-eaten': isEaten, 'is-poison': isRevealedPoison, 'selectable': selectable, 'my-poison': isMyPoison }" 
     @click="onEat"
   >
     <div class="snack-content">
-      <template v-if="isEaten">
+      <template v-if="isMyPoison">
+        <span class="poison-icon" style="font-size:48px;">☠️</span>
+      </template>
+      <template v-else-if="isEaten">
         <span class="eaten-x">✖</span>
       </template>
       <template v-else-if="isImage && !fallbackEmoji">
@@ -218,5 +222,11 @@ const handleImageError = (event) => {
   justify-content: center;
   width: 100%;
   height: 100%;
+}
+
+.snack-item.my-poison {
+  border: 3px solid #d03050;
+  box-shadow: 0 0 8px #d0305080;
+  background: #fff0f3;
 }
 </style>
