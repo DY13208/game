@@ -27,11 +27,11 @@
         <n-button type="info" block class="main-btn" @click="handleShowRules">游戏规则</n-button>
         <n-modal v-model:show="showRules" preset="dialog" title="游戏规则" :mask-closable="true" :closable="true" @close="handleHideRules">
           <div style="padding:8px 0 0 0;">
-            <p style="font-weight:bold;">欢迎来到这个紧张刺激的推理游戏！</p>
+            <p style="font-weight:bold;">GO GO GO 出发咯！</p>
             <ul style="margin:0 0 0 1.2em;padding:0;line-height:1.8;">
-              <li>游戏开始时，每位玩家 secretly 指定一个"毒点心"。</li>
+              <li>游戏开始时，每位玩家指定一个"毒点心"。</li>
               <li>玩家轮流选择并"吃掉"一个点心。</li>
-              <li>如果一位玩家吃到了自己指定的毒点心，他将立刻出局。</li>
+              <li>如果一位玩家吃到了其他玩家的毒点心，他将立刻出局。</li>
               <li>最后存活下来的玩家获得胜利！</li>
             </ul>
           </div>
@@ -53,7 +53,7 @@ import {
 const game = useGameStore();
 const message = useMessage();
 
-const playerName = ref('');
+const playerName = ref(localStorage.getItem('playerName') || '');
 const roomIdToJoin = ref('');
 const activeTab = ref('create');
 

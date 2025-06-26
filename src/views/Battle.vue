@@ -48,27 +48,27 @@
               <div class="snacks-grid">
                 <template v-if="store.gameStatus === 'preparing'">
                   <snack-item
-                    v-for="i in store.settings.snackCount"
-                    :key="i"
-                    :index="i - 1"
+                    v-for="(snack, i) in store.snacks"
+                    :key="snack.id"
+                    :index="snack.index"
                     :snack-style="store.settings.snackStyle"
-                    :is-eaten="isSnackEaten(i - 1)"
-                    :eaten-by="getEatenByPlayerName(i - 1)"
+                    :is-eaten="isSnackEaten(snack.index)"
+                    :eaten-by="getEatenByPlayerName(snack.index)"
                     :selectable="myPoisonIndex === null"
-                    :is-my-poison="myPoisonIndex === (i - 1) && store.gameStatus === 'preparing'"
-                    @click="handleSelectPoison(i - 1)"
+                    :is-my-poison="myPoisonIndex === snack.index && store.gameStatus === 'preparing'"
+                    @click="handleSelectPoison(snack.index)"
                   />
                 </template>
                 <template v-else>
                   <snack-item
-                    v-for="i in store.settings.snackCount"
-                    :key="i"
-                    :index="i - 1"
+                    v-for="(snack, i) in store.snacks"
+                    :key="snack.id"
+                    :index="snack.index"
                     :snack-style="store.settings.snackStyle"
-                    :is-eaten="isSnackEaten(i - 1)"
-                    :eaten-by="getEatenByPlayerName(i - 1)"
-                    :selectable="isMyTurn && !isSnackEaten(i - 1)"
-                    @click="handleEatSnack(i - 1)"
+                    :is-eaten="isSnackEaten(snack.index)"
+                    :eaten-by="getEatenByPlayerName(snack.index)"
+                    :selectable="isMyTurn && !isSnackEaten(snack.index)"
+                    @click="handleEatSnack(snack.index)"
                   />
                 </template>
               </div>

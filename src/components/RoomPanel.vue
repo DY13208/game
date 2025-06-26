@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, nextTick } from 'vue';
 import { useGameStore } from '@/store/game';
 import { NGrid, NGi, NForm, NFormItem, NSelect, NSlider, NSwitch, NInputNumber, NUpload, NText } from 'naive-ui';
 import { useMessage } from 'naive-ui';
@@ -10,16 +10,22 @@ const message = useMessage();
 const localSettings = ref({});
 
 // 监听 store 中 settings 的变化，同步到本地
-watch(() => game.settings, (newSettings) => {
+watch(() => game.settings, async (newSettings) => {
+    console.log('RoomPanel: game.settings changed:', newSettings);
     // 增加一个保护，确保 newSettings 是一个有内容的有效对象
     if (newSettings && newSettings.maxPlayers) {
+        console.log('RoomPanel: updating localSettings from:', localSettings.value, 'to:', newSettings);
         localSettings.value = JSON.parse(JSON.stringify(newSettings));
+        // 使用 nextTick 确保 DOM 更新
+        await nextTick();
+        console.log('RoomPanel: localSettings after nextTick:', localSettings.value);
     }
 }, { deep: true, immediate: true });
 
 // 创建一个统一的处理函数，当任何设置项被用户主动修改时调用
 const handleSettingsChange = () => {
     if (game.isHost) {
+        console.log('RoomPanel: Host updating settings:', localSettings.value);
         // v-model 已经更新了 localSettings 的值
         // 我们在这里把更新后的整个设置对象发给服务器
         game.socket.emit('room:update_settings', localSettings.value);
@@ -55,6 +61,11 @@ const handleUploadFinish = ({ file, event }) => {
 watch(() => localSettings.value.maxPlayers, (newMaxPlayers) => {
     localSettings.value.poisonCount = newMaxPlayers;
     handleSettingsChange();
+});
+
+// 暴露当前设置给父组件
+defineExpose({
+  getCurrentSettings: () => localSettings.value
 });
 
 </script>

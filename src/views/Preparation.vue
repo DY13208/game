@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useGameStore } from '@/store/game';
 import { NCard, NList, NListItem, NButton, NSpace, NTag, NInputGroup, NInput, useMessage, NTabs, NTabPane } from 'naive-ui';
 import RoomPanel from '@/components/RoomPanel.vue';
@@ -7,6 +7,7 @@ import QrcodeVue from 'qrcode.vue';
 
 const game = useGameStore();
 const message = useMessage();
+const roomPanelRef = ref(null);
 
 const canStartGame = computed(() => {
   // 至少需要2个玩家才能开始
@@ -17,7 +18,12 @@ const startGame = () => {
   console.log('startGame called, canStartGame:', canStartGame.value, 'roomId:', game.roomId);
   if (canStartGame.value) {
     console.log('Calling socket.startGame with roomId:', game.roomId);
-    game.socket.startGame(game.roomId);
+    // 从RoomPanel组件获取最新的设置
+    const currentSettings = roomPanelRef.value?.getCurrentSettings() || game.settings;
+    game.socket.emit('game:start', {
+      roomId: game.roomId,
+      snackCount: currentSettings.snackCount
+    });
   }
 };
 
@@ -42,6 +48,7 @@ const onLeaveRoom = () => {
 const renameDialogVisible = ref(false);
 const newName = ref('');
 const selfId = computed(() => game.playerId);
+const showWelcomeMessage = ref(false);
 
 const showRenameDialog = () => {
   newName.value = '';
@@ -60,6 +67,16 @@ const kickPlayer = (playerId) => {
 };
 
 const shareTab = ref('qrcode');
+
+// 检查是否是新加入的用户（通过URL参数或localStorage标记）
+onMounted(() => {
+  const isNewUser = sessionStorage.getItem('isNewUser') === 'true';
+  if (isNewUser && !game.isHost) {
+    showWelcomeMessage.value = true;
+    message.info('欢迎加入房间！您可以点击右上角的"改名"按钮修改昵称。');
+    sessionStorage.removeItem('isNewUser');
+  }
+});
 </script>
 
 <template>
@@ -108,7 +125,7 @@ const shareTab = ref('qrcode');
       <div class="content-wrapper">
         <div class="settings-panel">
           <h2>房间设置</h2>
-          <room-panel />
+          <room-panel ref="roomPanelRef" />
         </div>
         <div class="player-list-panel">
           <h2>玩家列表 ({{ game.players.length }} / {{ game.settings.maxPlayers }})</h2>

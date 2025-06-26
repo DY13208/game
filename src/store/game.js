@@ -69,7 +69,10 @@ export const useGameStore = defineStore('game', {
       });
 
       this.socket.onSettingsUpdated((newSettings) => {
+        console.log('Store: received settings update:', newSettings);
+        console.log('Store: current settings before update:', this.settings);
         this.settings = newSettings;
+        console.log('Store: settings after update:', this.settings);
       });
 
       this.socket.onPlayerListUpdated((players) => {
@@ -80,8 +83,13 @@ export const useGameStore = defineStore('game', {
       this.socket.onGameStarted((data) => {
         console.log('Game started event received:', data);
         this.snacks = data.snacks;
+        this.eatenSnacks = [];
+        this.poisonChoices = {};
         this.gameState = data.gameState;
         this.gameStatus = data.gameState.status;
+        if (data.settings) {
+          this.settings = data.settings;
+        }
         this.isGameOver = false;
         this.winner = null;
         this.history = [];

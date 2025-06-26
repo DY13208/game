@@ -83,7 +83,7 @@ const EMOJI_THEMES = {
 };
 
 const rooms = {}; // 存放所有房间信息
-const ALLOWED_SNACK_COUNTS = [6, 8, 16];
+const ALLOWED_SNACK_COUNTS = [6, 8, 10, 12, 14, 16];
 
 io.on('connection', (socket) => {
   console.log('a user connected:', socket.id);
@@ -96,7 +96,7 @@ io.on('connection', (socket) => {
     const settings = {
       maxPlayers: 2,
       snackCount: 16,
-      poisonCount: 1,
+      poisonCount: 2, // 根据maxPlayers设置
       snackStyle: 'default',
       turnTimer: 0,
       showHistory: true,
@@ -136,6 +136,7 @@ io.on('connection', (socket) => {
     const room = findRoomBySocketId(socket.id);
     if (room && room.players.find(p => p.id === socket.id && p.isHost)) {
       // 只有房主能修改设置
+      console.log(`Server: Host ${socket.id} updating settings in room ${room.id}:`, newSettings);
       
       // 处理 emoji 生成
       const themeKey = newSettings.snackStyle;
@@ -151,6 +152,7 @@ io.on('connection', (socket) => {
       }
       
       room.settings = newSettings;
+      console.log(`Server: Broadcasting settings update to room ${room.id}:`, room.settings);
       io.to(room.id).emit('room:settings_updated', room.settings);
     }
   });
@@ -185,41 +187,40 @@ io.on('connection', (socket) => {
   });
   
   // 游戏开始（由房主触发）
-  socket.on('game:start', (roomId) => {
-      console.log(`Received game:start request for room [${roomId}] from socket [${socket.id}]`);
-      const room = rooms[roomId];
-      if (room && room.players[0].id === socket.id) { // 只有房主能开始
-        console.log(`Host confirmed, starting game in room [${roomId}]`);
-        room.gameState.status = 'preparing';
-        // 根据实际玩家数量设置毒药数量
-        room.settings.poisonCount = room.players.length;
-        // 限制点心数量
-        if (!ALLOWED_SNACK_COUNTS.includes(room.settings.snackCount)) {
-          room.settings.snackCount = 8;
-        }
-        // 生成点心数据
-        const snacks = [];
-        for (let i = 0; i < room.settings.snackCount; i++) {
-          snacks.push({
-            id: i + 1,
-            index: i,
-            isEaten: false,
-            eatenBy: null
-          });
-        }
-        const gameStartedData = { 
-          roomId: roomId,
-          snacks: snacks,
-          gameState: room.gameState
-        };
-        console.log(`Emitting game:started event to room [${roomId}] with data:`, gameStartedData);
-        io.to(roomId).emit('game:started', gameStartedData);
-        console.log(`Game started in room [${roomId}]`);
-      } else {
-        console.log(`Host check failed: room exists: ${!!room}, is first player: ${room ? room.players[0].id === socket.id : false}`);
+  socket.on('game:start', (data) => {
+    let roomId = typeof data === 'object' ? data.roomId : data;
+    const room = rooms[roomId];
+    if (room && room.players[0].id === socket.id) { // 只有房主能开始
+      // 强制同步 snackCount
+      if (typeof data === 'object' && data.snackCount && ALLOWED_SNACK_COUNTS.includes(data.snackCount)) {
+        room.settings.snackCount = data.snackCount;
       }
+      room.gameState.status = 'preparing';
+      // 根据实际玩家数量设置毒药数量
+      room.settings.poisonCount = room.players.length;
+      // 限制点心数量
+      if (!ALLOWED_SNACK_COUNTS.includes(room.settings.snackCount)) {
+        room.settings.snackCount = 8;
+      }
+      // 生成点心数据
+      const snacks = [];
+      for (let i = 0; i < room.settings.snackCount; i++) {
+        snacks.push({
+          id: i + 1,
+          index: i,
+          isEaten: false,
+          eatenBy: null
+        });
+      }
+      const gameStartedData = { 
+        roomId: roomId,
+        snacks: snacks,
+        gameState: room.gameState,
+        settings: room.settings  // 添加最新的设置
+      };
+      io.to(roomId).emit('game:started', gameStartedData);
+    }
   });
-
 
   // 玩家选择毒点心
   socket.on('game:set-poison', ({ roomId, snackIndex }) => {
@@ -256,7 +257,9 @@ io.on('connection', (socket) => {
         if (room.gameState.poisonChoices[playerId] === snackIndex) {
             // 吃到任何毒药，当前玩家出局，其他玩家胜利
             gameOver = true;
-            winner = room.players.find(p => p.id !== socket.id);
+            // 找到除了当前玩家之外的其他玩家作为胜利者
+            const otherPlayers = room.players.filter(p => p.id !== socket.id);
+            winner = otherPlayers.length > 0 ? otherPlayers[0] : null;
             break;
         }
     }
@@ -315,7 +318,8 @@ io.on('connection', (socket) => {
     const gameStartedData = {
       roomId: roomId,
       snacks: snacks,
-      gameState: room.gameState
+      gameState: room.gameState,
+      settings: room.settings  // 添加最新的设置
     };
     io.to(roomId).emit('game:started', gameStartedData);
     console.log(`房主发起新一局，room [${roomId}]`);
@@ -418,4 +422,4 @@ function findRoomBySocketId(socketId) {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
-}); 
+});
