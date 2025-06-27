@@ -49,7 +49,7 @@ app.post('/upload', upload.array('snacks', 100), (req, res) => {
   // 生成可访问的 URL 列表
   const fileUrls = req.files.map(file => {
     // 假设服务器运行在 localhost:3000
-    return `http://localhost:3000/uploads/${file.filename}`;
+    return `http://game.deathsong.top:3120/uploads/${file.filename}`;
   });
   res.json({ urls: fileUrls });
 });

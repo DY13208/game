@@ -15,7 +15,7 @@ app.use(naive)
 const gameStore = useGameStore()
 
 // Socket.IO 初始化
-const socket = new GameSocket('http://localhost:3000');
+const socket = new GameSocket('http://game.deathsong.top:3120');
 
 // 将 socket 和 router 实例注入到 store 中
 socket.socket.on('connect', () => {

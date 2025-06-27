@@ -99,7 +99,7 @@ defineExpose({
         <n-gi :span="2" v-if="localSettings.snackStyle === 'custom'">
             <n-form-item label="上传图片">
                 <n-upload
-                    action="http://localhost:3000/upload"
+                    action="http://game.deathsong.top:3120/upload"
                     v-model:file-list="fileList"
                     list-type="image-card"
                     multiple
