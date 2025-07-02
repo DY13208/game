@@ -7,27 +7,32 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home.vue')
+    component: () => import('../views/Home.vue'),
+    meta: { title: '主页' }
   },
   {
     path: '/preparation',
     name: 'Preparation',
-    component: () => import('../views/Preparation.vue')
+    component: () => import('../views/Preparation.vue'),
+    meta: { title: '准备阶段' }
   },
   {
     path: '/battle',
     name: 'Battle',
-    component: () => import('../views/Battle.vue')
+    component: () => import('../views/Battle.vue'),
+    meta: { title: '战斗阶段' }
   },
   {
     path: '/settlement',
     name: 'Settlement',
-    component: () => import('../views/Settlement.vue')
+    component: () => import('../views/Settlement.vue'),
+    meta: { title: '结算阶段' }
   },
   {
     path: '/join/:roomId',
     name: 'JoinRoom',
-    component: () => import('../views/Join.vue')
+    component: () => import('../views/Join.vue'),
+    meta: { title: '加入房间' }
   }
 ]
 
